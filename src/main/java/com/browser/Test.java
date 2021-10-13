@@ -1,10 +1,17 @@
 package com.browser;
 
+import com.browser.experimental.media.CustomMediaPlayer;
+import com.browser.experimental.media.MP3;
+import com.browser.experimental.media.Sound;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -29,19 +36,9 @@ import java.net.URL;
 
 public class Test extends Application {
     @Override
-    public void start(final Stage stage) {
-
-        stage.setTitle("JavaFX WebView Example");
-
-        WebView webView = new WebView();
-
-        webView.getEngine().load("http://google.com");
-
-        VBox vBox = new VBox(webView);
-        Scene scene = new Scene(vBox, 960, 600);
-
-        stage.setScene(scene);
-        stage.show();
+    public void start(Stage primaryStage) {
+        MP3 mp3 = new MP3();
+        mp3.play("Audio.mp3");
     }
 
     public static void main(String[] args) {
