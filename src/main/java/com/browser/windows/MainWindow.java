@@ -39,6 +39,7 @@ public class MainWindow extends Application {
     boolean failed = false;
     boolean ini = false;
     boolean released = true;
+    boolean first = true;
     String lasttitle = "";
     int maxY = 0;
     @Override
@@ -68,8 +69,8 @@ public class MainWindow extends Application {
         tools.add(forward);
         tools.add(urls);
         tools.add(browse);
-        frame.add(tools, BorderLayout.NORTH);
-        frame.add(panels,BorderLayout.CENTER);
+        frame.add(tools,BorderLayout.NORTH);
+        frame.add(panels, BorderLayout.CENTER);
         WebEngine engine = webView.getEngine();
         engine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
         CookieManager cookieManager = new CookieManager();
@@ -104,9 +105,10 @@ public class MainWindow extends Application {
                 new ChangeListener<State>() {
                     @Override public void changed(ObservableValue ov, State oldState, State newState) {
                         if (newState == Worker.State.SUCCEEDED) {
-                            if(new Config().read("AdBlock").equals("false")) {
+                            first = false;
+                            if (new Config().read("AdBlock").equals("false")) {
                                 released = false;
-                            }else{
+                            } else {
                                 released = true;
                             }
                             cookieManager.getCookieStore().getCookies().forEach(cookie -> {
@@ -115,21 +117,21 @@ public class MainWindow extends Application {
                                 String domain = cookie.getDomain();
                                 long maxAge = cookie.getMaxAge(); // seconds
                                 boolean secure = cookie.getSecure();
-                                cookies.writeCookies(name,value,domain,String.valueOf(maxAge),String.valueOf(secure));
+                                cookies.writeCookies(name, value, domain, String.valueOf(maxAge), String.valueOf(secure));
                             });
                             failed = false;
                             frame.setTitle("GaniBrowse V1.0 - " + engine.getTitle());
                             //System.out.println(engine.getTitle());
-                            if(urls.getText().toLowerCase().equals("about://")) {
+                            if (urls.getText().toLowerCase().equals("about://")) {
                                 new About().open(webView);
-                            }else{
-                                if(urls.getText().toLowerCase().equals("settings://")) {
+                            } else {
+                                if (urls.getText().toLowerCase().equals("settings://")) {
                                     new settings().open();
-                                }else{
-                                    if(urls.getText().toLowerCase().equals("java://")) {
+                                } else {
+                                    if (urls.getText().toLowerCase().equals("java://")) {
                                         new JAVA().open();
-                                    }else{
-                                        if(released) {
+                                    } else {
+                                        if (released) {
                                             if (urls.getText().toLowerCase().contains("https://www.youtube.com")) {
                                                 if (!ini) {
                                                     engine.executeScript("document.cookie=\"VISITOR_INFO1_LIVE=oKckVSqvaGw; path=/; domain=.youtube.com\";\n" +
@@ -140,10 +142,18 @@ public class MainWindow extends Application {
                                                 ini = false;
                                             }
                                         }
+                                        if (urls.getText().toLowerCase().endsWith("zip")) {
+                                            System.out.println("File download");
+                                        }
                                     }
                                 }
                             }
                         }
+                        //if (newState == State.RUNNING) {
+                        //    if(!first) {
+                        //        new SaveWindow().open(frame, urls.getText());
+                        //    }
+                        //}
                         if (newState == State.FAILED) {
                             if(new Config().read("AdBlock").equals("false")) {
                                 released = false;
@@ -286,6 +296,16 @@ public class MainWindow extends Application {
         });
         VBox vBox = new VBox(webView);
         Scene scene = new Scene(vBox, 960, 600);
+        scene.widthProperty().addListener(new ChangeListener<Number>() {
+            @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
+                webView.setPrefWidth(newSceneWidth.doubleValue()*0.9);
+            }
+        });
+        scene.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneHeight, Number newSceneHeight) {
+                webView.setPrefHeight(newSceneHeight.doubleValue()*0.98);
+            }
+        });
         panels.setScene(scene);
         frame.setTitle("GaniBrowse V1.0 - %%");
         frame.add(panels, BorderLayout.SOUTH);
@@ -321,9 +341,11 @@ public class MainWindow extends Application {
                 new Hide().hide();
             }
         });
+        tools.setMaximumSize(new Dimension(frame.getX(), frame.getY()));
         frame.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
-                webView.resize(panels.getX(),panels.getY());
+                webView.setPrefWidth(frame.getWidth());
+                webView.setPrefHeight(frame.getHeight());
                 new Resize().resize();
             }
         });
