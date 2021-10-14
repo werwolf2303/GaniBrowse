@@ -23,6 +23,7 @@ import com.browser.handlers.CustomCookieStore;
 import com.browser.protocols.About;
 import com.browser.protocols.JAVA;
 import com.browser.protocols.settings;
+import com.browser.vpn.ui.UI;
 import com.browser.windows.DebugWindow;
 import com.browser.windows.InjectWindow;
 import javafx.application.Application;
@@ -51,7 +52,7 @@ import javafx.stage.WindowEvent;
 import javax.swing.*;
 
 public class MainWindowV2 extends Application {
-    WebView webView = new WebView();
+    WebView webView = null;
     JTextField urls = new JTextField(50);
     String lastproctol = "";
     boolean failed = false;
@@ -71,25 +72,61 @@ public class MainWindowV2 extends Application {
         Cookies cookies = new Cookies();
         JButton reload = new JButton("Reload");
         JButton debug = new JButton("Debug");
+        JButton vpn = new JButton("VPN");
         JButton inject = new JButton("Inject JS");
         JButton browse = new JButton("Go");
         JButton back = new JButton("Back");
+        JButton news = new JButton("New Window");
         JButton forward = new JButton("Forward");
         JPanel tools = new JPanel();
-        WebEngine engine = webView.getEngine();
         SwingNode tool = new SwingNode();
+        webView = new WebView();
+        WebEngine webEngine = webView.getEngine();
         primaryStage.setTitle("GaniBrowse V1.0 - %%");
         borderPane.setTop(tool);
         tools.add(inject);
+        news.setVisible(false);
+        String[] petStrings = { "Google" };
+        JComboBox petList = new JComboBox(petStrings);
+        petList.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(petList.getSelectedItem()=="") {
+                }else{
+                    if(petList.getSelectedItem().equals("Google")) {
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                webEngine.load("https://www.google.de");
+                            }
+                        });
+                    }
+                }
+            }
+        });
+        vpn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new UI().initital();
+            }
+        });
+        tools.add(vpn);
         tools.add(debug);
         tools.add(back);
         tools.add(forward);
         tools.add(urls);
         tools.add(browse);
         tools.add(reload);
+        tools.add(news);
+        tools.add(petList);
         // LIST VIEW (URLS)
         // BROWSER
-        final WebEngine webEngine = webView.getEngine();
+        vpn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
@@ -102,7 +139,13 @@ public class MainWindowV2 extends Application {
                 webEngine.load("https://www.google.de");
             }
         });
-        engine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
+        news.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new MainWindowV2().initial();
+            }
+        });
+        webEngine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
         CookieManager cookieManager = new CookieManager();
         CookieHandler.setDefault(cookieManager);
         urls.addKeyListener(new KeyListener() {
@@ -131,7 +174,7 @@ public class MainWindowV2 extends Application {
 
             }
         });
-        engine.getLoadWorker().stateProperty().addListener(
+        webEngine.getLoadWorker().stateProperty().addListener(
                 new ChangeListener<Worker.State>() {
                     @Override public void changed(ObservableValue ov, Worker.State oldState, Worker.State newState) {
                         if (newState == Worker.State.SUCCEEDED) {
@@ -150,7 +193,7 @@ public class MainWindowV2 extends Application {
                                 cookies.writeCookies(name, value, domain, String.valueOf(maxAge), String.valueOf(secure));
                             });
                             failed = false;
-                            primaryStage.setTitle("GaniBrowse V1.0 - " + engine.getTitle());
+                            primaryStage.setTitle("GaniBrowse V1.0 - " + webEngine.getTitle());
                             //System.out.println(engine.getTitle());
                             if (urls.getText().toLowerCase().equals("about://")) {
                                 new About().open(webView);
@@ -164,7 +207,7 @@ public class MainWindowV2 extends Application {
                                         if (released) {
                                             if (urls.getText().toLowerCase().contains("https://www.youtube.com")) {
                                                 if (!ini) {
-                                                    engine.executeScript("document.cookie=\"VISITOR_INFO1_LIVE=oKckVSqvaGw; path=/; domain=.youtube.com\";\n" +
+                                                    webEngine.executeScript("document.cookie=\"VISITOR_INFO1_LIVE=oKckVSqvaGw; path=/; domain=.youtube.com\";\n" +
                                                             "window.location.reload();");
                                                 }
                                                 ini = true;
@@ -203,18 +246,18 @@ public class MainWindowV2 extends Application {
                             }else {
                                 if (!urls.getText().contains("http://")) {
                                     failed = true;
-                                    engine.load("https://" + urls.getText());
+                                    webEngine.load("https://" + urls.getText());
                                 }
                                 if (!urls.getText().contains("https://")) {
                                     failed = true;
-                                    engine.load("https://" + urls.getText());
+                                    webEngine.load("https://" + urls.getText());
                                 }
                                 if (failed) {
-                                    engine.load("http://" + urls.getText().replace("https://", ""));
+                                    webEngine.load("http://" + urls.getText().replace("https://", ""));
                                 }
                             }
                         }
-                        urls.setText(engine.getLocation());
+                        urls.setText(webEngine.getLocation());
                         CookieManager man = (CookieManager) CookieHandler.getDefault();
                         CookieStore store = man.getCookieStore();
                         try {
@@ -277,7 +320,7 @@ public class MainWindowV2 extends Application {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        engine.executeScript("history.forward()");
+                        webEngine.executeScript("history.forward()");
                     }
                 });
             }
@@ -288,7 +331,7 @@ public class MainWindowV2 extends Application {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        engine.executeScript("history.back()");
+                        webEngine.executeScript("history.back()");
                     }
                 });
             }
@@ -344,7 +387,7 @@ public class MainWindowV2 extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                                            @Override
                                            public void handle(WindowEvent windowEvent) {
-                                               System.exit(0);
+
                                            }
                                        });
                 borderPane.setCenter(webView);
@@ -362,6 +405,9 @@ public class MainWindowV2 extends Application {
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
+    }
+    public void initial() {
+        launch();
     }
 
 }

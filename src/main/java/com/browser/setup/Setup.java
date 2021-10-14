@@ -1,7 +1,9 @@
 package com.browser.setup;
 
 import com.browser.handlers.Cookies;
+import com.browser.vpn.api.GetServers;
 import com.browser.windows.MainWindow;
+import com.opencsv.exceptions.CsvException;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -9,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 
 public class Setup {
     public Boolean firstLaunch() {
@@ -44,6 +47,13 @@ public class Setup {
                         next.setVisible(false);
                         previous.setVisible(false);
                         done.setVisible(true);
+                        try {
+                            new GetServers().csvdownload();
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                        } catch (CsvException csvException) {
+                            csvException.printStackTrace();
+                        }
                         new Cookies().createCookieFile();
                     }
                 }
