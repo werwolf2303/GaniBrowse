@@ -37,6 +37,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -59,6 +60,7 @@ public class MainWindowV2 extends Application {
     boolean ini = false;
     boolean released = true;
     boolean first = true;
+    boolean switches = true;
     String lasttitle = "";
     int maxY = 0;
     @Override
@@ -145,7 +147,7 @@ public class MainWindowV2 extends Application {
                 new MainWindowV2().initial();
             }
         });
-        webEngine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
+        //webEngine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
         CookieManager cookieManager = new CookieManager();
         CookieHandler.setDefault(cookieManager);
         urls.addKeyListener(new KeyListener() {
@@ -383,6 +385,28 @@ public class MainWindowV2 extends Application {
         });
         webView.setPrefHeight(scene.getHeight());
         webView.setPrefWidth(scene.getWidth());
+        scene.setOnKeyPressed(new EventHandler<javafx.scene.input.KeyEvent>() {
+            @Override
+            public void handle(javafx.scene.input.KeyEvent keyEvent) {
+                if(keyEvent.getCode()==KeyCode.ESCAPE) {
+                    if(switches) {
+                        primaryStage.setFullScreen(true);
+                        tool.setVisible(false);
+                        borderPane.setTop(null);
+                        webView.setPrefHeight(scene.getHeight());
+                        webView.setPrefWidth(scene.getWidth());
+                        switches = false;
+                    }else{
+                        primaryStage.setFullScreen(false);
+                        tool.setVisible(true);
+                        borderPane.setTop(tool);
+                        webView.setPrefWidth(scene.getWidth());
+                        webView.setPrefHeight(scene.getHeight());
+                        switches = true;
+                    }
+                }
+            }
+        });
         // BORDER PANE
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                                            @Override
